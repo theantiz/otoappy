@@ -1,0 +1,32 @@
+# ---- Node / Express backend ----
+job-autofill-backend/node_modules/
+job-autofill-backend/npm-debug.log*
+job-autofill-backend/yarn-debug.log*
+job-autofill-backend/yarn-error.log*
+job-autofill-backend/package-lock.json
+
+# Local environment / secrets
+.env
+.env.*
+
+# ---- Browser extension / common build outputs ----
+node_modules/
+dist/
+build/
+out/
+coverage/
+
+# ---- OS / editor files ----
+.DS_Store
+*.swp
+*.swo
+*.swn
+*.iml
+.vscode/
+.idea/
+*.log
+*TODO.md
+
+# ---- Environment-specific files ----
+# (Add more ignores here if your project generates additional artifacts)
+

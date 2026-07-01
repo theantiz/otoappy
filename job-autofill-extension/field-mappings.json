@@ -1,0 +1,39 @@
+{
+  "default": {
+    "fullName": ["full name", "name", "your name", "candidate name"],
+    "email": ["email", "e-mail", "work email"],
+    "phone": ["phone", "mobile", "telephone", "phone number"],
+    "address": ["address", "street address", "home address"],
+    "location": ["location", "city", "current city", "where are you located"],
+    "portfolio": ["portfolio", "personal site", "personal website"],
+    "github": ["github", "github profile"],
+    "linkedin": ["linkedin", "linkedin profile", "linkedin url"],
+    "whyRole": ["why this role", "why do you want this job", "why do you want to work here", "motivation", "why are you interested"],
+    "aboutMe": ["about you", "about yourself", "tell us about yourself", "summary", "introduce yourself", "short bio"],
+    "coverLetter": ["cover letter", "motivation letter", "application letter"]
+  },
+  "greenhouse.io": {
+    "fullName": ["first name", "given name", "name"],
+    "email": ["email", "work email"],
+    "phone": ["phone", "mobile", "phone number"],
+    "location": ["location", "city"],
+    "linkedin": ["linkedin", "linkedin url", "linkedin profile"],
+    "github": ["github", "github url", "github profile"],
+    "portfolio": ["portfolio", "personal website", "personal site"],
+    "aboutMe": ["resume summary", "summary", "about you", "tell us about yourself"],
+    "whyRole": ["why this role", "why are you interested", "motivation"]
+  },
+  "lever.co": {
+    "fullName": ["first name", "given name", "full name", "candidate name"],
+    "email": ["email", "work email"],
+    "phone": ["phone", "mobile", "telephone", "phone number"],
+    "address": ["address", "street address"],
+    "location": ["location", "city", "current city"],
+    "linkedin": ["linkedin", "linkedin url", "linkedin profile"],
+    "github": ["github", "github profile", "github url"],
+    "portfolio": ["portfolio", "personal site", "personal website"],
+    "whyRole": ["why this role", "why do you want this job", "motivation"],
+    "aboutMe": ["about you", "about yourself", "tell us about yourself", "summary"]
+  }
+}
+

@@ -1,0 +1,336 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Job Autofill+</title>
+    <style>
+      :root {
+        --bg: #ffffff;
+        --panel: #f6f7fb;
+        --text: #111827;
+        --muted: #6b7280;
+        --border: #e5e7eb;
+        --shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
+        --primary: #2563eb;
+        --primaryHover: #1d4ed8;
+        --danger: #ef4444;
+      }
+
+      body {
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+        font-size: 13px;
+        margin: 0;
+        width: 380px;
+        color: var(--text);
+        background: var(--bg);
+      }
+
+      .wrap {
+        padding: 14px;
+      }
+
+      .top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      .brand {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .brandTitle {
+        font-size: 14px;
+        font-weight: 800;
+      }
+
+      #currentDomain {
+        font-size: 11px;
+        color: var(--muted);
+        line-height: 1.2;
+      }
+
+      #siteToggle {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding-top: 2px;
+      }
+
+      #siteToggle input {
+        width: 16px;
+        height: 16px;
+      }
+
+      .pill {
+        font-size: 11px;
+        color: var(--muted);
+        border: 1px solid var(--border);
+        background: #fff;
+        padding: 2px 8px;
+        border-radius: 999px;
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 12px;
+        box-shadow: var(--shadow);
+      }
+
+      hr {
+        border: 0;
+        border-top: 1px solid var(--border);
+        margin: 12px 0;
+      }
+
+      h3 {
+        margin: 0 0 10px 0;
+        font-size: 13px;
+        color: #111827;
+      }
+
+      .row {
+        margin-bottom: 10px;
+      }
+
+      label {
+        display: block;
+        font-weight: 650;
+        margin-bottom: 4px;
+        color: #111827;
+      }
+
+      input,
+      textarea,
+      select {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 8px 10px;
+        font-size: 12.5px;
+        border: 1px solid #d1d5db;
+        border-radius: 10px;
+        outline: none;
+        background: #fff;
+      }
+
+      input:focus,
+      textarea:focus,
+      select:focus {
+        border-color: rgba(37, 99, 235, 0.6);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+      }
+
+      textarea {
+        resize: vertical;
+        min-height: 44px;
+      }
+
+      .profileHeader {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+
+      button {
+        width: 100%;
+        margin-top: 8px;
+        padding: 10px 12px;
+        font-weight: 800;
+        cursor: pointer;
+        border: 1px solid #d1d5db;
+        border-radius: 12px;
+        background: #f9fafb;
+        color: #111827;
+      }
+
+      button:hover {
+        background: #f3f4f6;
+      }
+
+      .btnSecondary {
+        background: #fff;
+      }
+
+      .btnPrimary {
+        border-color: rgba(37, 99, 235, 0.5);
+        background: var(--primary);
+        color: #fff;
+      }
+
+      .btnPrimary:hover {
+        background: var(--primaryHover);
+      }
+
+      .btnGhost {
+        background: #eef2ff;
+        border-color: rgba(99, 102, 241, 0.25);
+        color: #3730a3;
+      }
+
+      .btnGhost:hover {
+        background: #e0e7ff;
+      }
+
+      #controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      #controls button {
+        margin-top: 0;
+      }
+
+      #aiActions button {
+        margin-top: 0;
+      }
+
+      #status {
+        margin-top: 10px;
+        font-size: 11px;
+        color: #374151;
+        min-height: 14px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="wrap">
+      <div class="top">
+        <div class="brand">
+          <div class="brandTitle">Job Autofill+</div>
+          <div id="currentDomain"></div>
+        </div>
+
+        <div id="siteToggle">
+          <input type="checkbox" id="enableSite" />
+          <label for="enableSite" style="font-weight:500;margin:0;">Enabled</label>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div style="display:flex; gap:10px; align-items:center; justify-content:space-between;">
+          <div class="profileHeader" style="margin:0; flex:1;">
+            <select id="profileSelect"></select>
+            <button id="newProfileBtn" class="btnSecondary" style="margin-top:0;width:auto;">New profile</button>
+          </div>
+
+          <div style="display:flex; gap:8px;">
+            <button id="tabApplyBtn" class="btnGhost" style="width:auto; margin-top:0;">Apply</button>
+            <button id="tabHistoryBtn" class="btnGhost" style="width:auto; margin-top:0;">History</button>
+          </div>
+        </div>
+
+        <hr />
+
+        <div id="applyTab">
+          <h3>Profile details</h3>
+
+
+
+
+          <label for="profileName">Profile name</label>
+          <input id="profileName" type="text" />
+        </div>
+
+        <div class="row">
+          <label for="fullName">Full Name</label>
+          <input id="fullName" type="text" />
+        </div>
+
+        <div class="row">
+          <label for="email">Email</label>
+          <input id="email" type="email" />
+        </div>
+
+        <div class="row">
+          <label for="phone">Phone</label>
+          <input id="phone" type="text" />
+        </div>
+
+        <div class="row">
+          <label for="address">Address</label>
+          <input id="address" type="text" />
+        </div>
+
+        <div class="row">
+          <label for="location">Location</label>
+          <input id="location" type="text" />
+        </div>
+
+        <div class="row">
+          <label for="portfolio">Portfolio</label>
+          <input id="portfolio" type="url" />
+        </div>
+
+        <div class="row">
+          <label for="github">GitHub</label>
+          <input id="github" type="url" />
+        </div>
+
+        <div class="row">
+          <label for="linkedin">LinkedIn</label>
+          <input id="linkedin" type="url" />
+        </div>
+
+        <div class="row">
+          <label for="whyRole">Why this role?</label>
+          <textarea id="whyRole"></textarea>
+        </div>
+
+        <div class="row">
+          <label for="aboutMe">About me</label>
+          <textarea id="aboutMe"></textarea>
+        </div>
+
+        <div class="row">
+          <label for="coverLetter">Cover letter</label>
+          <textarea id="coverLetter"></textarea>
+        </div>
+
+        <div id="controls" class="row">
+          <button id="saveProfileBtn" class="btnSecondary">Save profile</button>
+          <button id="fillNowBtn" class="btnPrimary">Fill now</button>
+        </div>
+
+        <div id="aiActions" class="row">
+          <button
+            id="generateCoverBtn"
+            class="btnGhost"
+            title="Uses the backend server to generate an AI cover letter"
+          >
+            Generate cover letter (AI)
+          </button>
+        </div>
+
+        <div class="row">
+          <button id="markAppliedBtn" class="btnPrimary" style="margin-top:0;">Mark as Applied</button>
+        </div>
+
+        <div id="status"></div>
+      </div>
+
+      <div id="historyTab" style="display:none;">
+
+        <h3 style="margin-bottom:10px;">Application History</h3>
+        <div id="historyList"></div>
+        <div id="historyEmpty" style="color: var(--muted); font-size: 12px;">No applications recorded yet.</div>
+      </div>
+
+
+      <script src="popup.js"></script>
+    </div>
+  </body>
+</html>
+
+
+
