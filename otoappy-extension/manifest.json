@@ -1,13 +1,13 @@
 {
   "manifest_version": 3,
-  "name": "Job Application Autofill+",
+  "name": "otoappy",
   "version": "3.0.0",
   "description": "Autofill job applications + AI cover letters.",
   "permissions": ["storage", "scripting", "activeTab"],
   "host_permissions": ["*://*/*"],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Job Autofill+"
+    "default_title": "otoappy"
   },
   "background": {
     "service_worker": "background.js"

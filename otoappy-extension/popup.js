@@ -21,6 +21,179 @@ let currentDomain = null;
 
 const BACKEND_URL = "http://localhost:4000";
 
+const AUTH_STORAGE_KEYS = ["authToken", "authUserId"];
+
+function showAuthView() {
+  const authView = $("authView");
+  const mainView = $("mainView");
+  if (authView) authView.style.display = "block";
+  if (mainView) mainView.style.display = "none";
+}
+
+function showMainView() {
+  const authView = $("authView");
+  const mainView = $("mainView");
+  if (authView) authView.style.display = "none";
+  if (mainView) mainView.style.display = "block";
+}
+
+function setAuthError(msg) {
+  const el = $("authError");
+  if (el) el.textContent = msg || "";
+}
+
+async function withAuthToken(fn) {
+  return new Promise((resolve) => {
+    chrome.storage.local.get(AUTH_STORAGE_KEYS, async (data) => {
+      const token = data.authToken;
+      const userId = data.authUserId;
+      resolve(await fn({ token, userId }));
+    });
+  });
+}
+
+async function authedFetch(path, { method, body, isJson = true }) {
+  return withAuthToken(async ({ token }) => {
+    if (!token) return { ok: false, status: 401, data: null, rawText: "" };
+
+    const headers = {};
+    if (isJson) headers["Content-Type"] = "application/json";
+    headers.Authorization = `Bearer ${token}`;
+
+    const resp = await fetch(`${BACKEND_URL}${path}`, {
+      method,
+      headers,
+      body: body ? (isJson ? JSON.stringify(body) : body) : undefined
+    });
+
+    const rawText = await resp.text().catch(() => "");
+    let data = null;
+    if (rawText) {
+      try {
+        data = JSON.parse(rawText);
+      } catch {
+        // ignore
+      }
+    }
+
+    return { ok: resp.ok, status: resp.status, data, rawText };
+  });
+}
+
+function clearAuth() {
+  return new Promise((resolve) => {
+    chrome.storage.local.remove(["authToken", "authUserId"], () => resolve());
+  });
+}
+
+async function tryEnsureAuthOrShowLogin() {
+  return new Promise((resolve) => {
+    chrome.storage.local.get(["authToken", "authUserId"], async (data) => {
+      const token = data.authToken;
+      const userId = data.authUserId;
+
+      if (!token || !userId) {
+        setAuthError("");
+        showAuthView();
+        resolve(false);
+        return;
+      }
+
+      // We only trust the token if we can make at least one protected call.
+      // Use a lightweight protected request.
+      // NOTE: If backend returns 401, we clear storage and show login.
+      try {
+        const resp = await fetch(`${BACKEND_URL}/`, {
+          method: "GET",
+          headers: {
+            Authorization: "Bearer " + token
+          }
+        });
+
+
+        if (resp.status === 401) {
+          await handleApi401AndRecover();
+          resolve(false);
+          return;
+        }
+
+        // Some backend setups may ignore auth on '/'. We accept non-401 responses
+        // as “token present”; protected endpoints will still enforce correctness later.
+        showMainView();
+        resolve(true);
+      } catch {
+        // Network failure: keep UI available (token may be valid)
+        showMainView();
+        resolve(true);
+      }
+    });
+  });
+}
+
+
+async function authenticate(action) {
+  const email = $("authEmail")?.value?.trim();
+  const password = $("authPassword")?.value;
+
+  if (!email || !password) {
+    setAuthError("Email and password are required");
+    return;
+  }
+
+  setAuthError("");
+
+  try {
+    const endpoint = action === "signup" ? "/auth/signup" : "/auth/login";
+
+    const resp = await fetch(`${BACKEND_URL}${endpoint}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password })
+    });
+
+    const rawText = await resp.text().catch(() => "");
+    let data = null;
+    if (rawText) {
+      try {
+        data = JSON.parse(rawText);
+      } catch {
+        // ignore
+      }
+    }
+
+    if (!resp.ok) {
+      const msg = data?.error || "Authentication failed";
+      setAuthError(msg);
+      return;
+    }
+
+    if (!data?.token || !data?.userId) {
+      setAuthError("Invalid auth response");
+      return;
+    }
+
+    await new Promise((resolve) => {
+      chrome.storage.local.set({ authToken: data.token, authUserId: data.userId }, () => resolve());
+    });
+
+    setAuthError("");
+    showMainView();
+
+    // Load profiles UI only after login
+    refreshProfileUI();
+  } catch (err) {
+    console.error(err);
+    setAuthError("Authentication failed");
+  }
+}
+
+async function handleApi401AndRecover() {
+  await clearAuth();
+  setAuthError("");
+  showAuthView();
+}
+
+
 function generateId() {
   return "p_" + Math.random().toString(36).slice(2, 10);
 }
@@ -216,21 +389,33 @@ function onFillNow() {
 }
 
 async function generateCoverLetterViaBackend(profileData, jobContext) {
-  const resp = await fetch(`${BACKEND_URL}/generate-cover`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ profileData, jobContext })
+  return withAuthToken(async ({ token }) => {
+    const resp = await fetch(`${BACKEND_URL}/generate-cover`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify({ profileData, jobContext })
+    });
+
+    if (resp.status === 401) {
+      await handleApi401AndRecover();
+      throw new Error("Unauthorized");
+    }
+
+    if (!resp.ok) {
+      const text = await resp.text().catch(() => "");
+      throw new Error(`Backend error: ${resp.status} ${text}`);
+    }
+
+    const data = await resp.json();
+    if (!data || typeof data.coverLetter !== "string")
+      throw new Error("Invalid backend response");
+    return data.coverLetter;
   });
-
-  if (!resp.ok) {
-    const text = await resp.text().catch(() => "");
-    throw new Error(`Backend error: ${resp.status} ${text}`);
-  }
-
-  const data = await resp.json();
-  if (!data || typeof data.coverLetter !== "string") throw new Error("Invalid backend response");
-  return data.coverLetter;
 }
+
 
 function inferRoleAndCompanyFromTabTitle(tabTitle) {
   const title = (tabTitle || "").trim();
@@ -397,18 +582,29 @@ async function parseResumeViaBackend(file) {
   const formData = new FormData();
   formData.append("resume", file);
 
-  const resp = await fetch(`${BACKEND_URL}/parse-resume`, {
-    method: "POST",
-    body: formData
+  return withAuthToken(async ({ token }) => {
+    const resp = await fetch(`${BACKEND_URL}/parse-resume`, {
+      method: "POST",
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+      },
+      body: formData
+    });
+
+    if (resp.status === 401) {
+      await handleApi401AndRecover();
+      throw new Error("Unauthorized");
+    }
+
+    if (!resp.ok) {
+      const text = await resp.text().catch(() => "");
+      throw new Error(`Backend error: ${resp.status} ${text}`);
+    }
+
+    return await resp.json();
   });
-
-  if (!resp.ok) {
-    const text = await resp.text().catch(() => "");
-    throw new Error(`Backend error: ${resp.status} ${text}`);
-  }
-
-  return await resp.json();
 }
+
 
 function setResumeParseError(msg) {
   const el = $("resumeParseError");
@@ -442,6 +638,58 @@ function setProfileFormFromParsedData(parsed) {
   const addressLine = [street, city, state, zip, country].filter(Boolean).join(", ");
   $("address").value = addressLine;
   $("location").value = [city, state].filter(Boolean).join(", ");
+}
+
+async function prefillFormFromServerProfile(profile) {
+  if (!profile) return;
+
+  const firstName = profile?.firstName ? String(profile.firstName) : "";
+  const lastName = profile?.lastName ? String(profile.lastName) : "";
+  const fullName = [firstName, lastName].filter(Boolean).join(" ").trim();
+
+  // Overwrite existing inputs (returning user behavior)
+  $("fullName").value = fullName;
+  $("email").value = profile?.email ? String(profile.email) : "";
+  $("phone").value = profile?.phone ? String(profile.phone) : "";
+
+  const addr = profile?.address || {};
+  const street = addr?.street ? String(addr.street) : "";
+  const city = addr?.city ? String(addr.city) : "";
+  const state = addr?.state ? String(addr.state) : "";
+  const zip = addr?.zip ? String(addr.zip) : "";
+  const country = addr?.country ? String(addr.country) : "";
+
+  const addressLine = [street, city, state, zip, country].filter(Boolean).join(", ");
+  $("address").value = addressLine;
+
+  $("location").value = [city, state].filter(Boolean).join(", ");
+}
+
+async function fetchProfileFromBackend() {
+  return withAuthToken(async ({ token }) => {
+    if (!token) return null;
+
+    const resp = await fetch(`${BACKEND_URL}/profile`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (resp.status === 401) {
+      await handleApi401AndRecover();
+      throw new Error("Unauthorized");
+    }
+
+    if (!resp.ok) {
+      const text = await resp.text().catch(() => "");
+      throw new Error(`Backend error: ${resp.status} ${text}`);
+    }
+
+    // Returns null when no profile saved
+    const data = await resp.json().catch(() => null);
+    return data;
+  });
 }
 
 async function onParseResumeClick() {
@@ -484,27 +732,174 @@ async function onParseResumeClick() {
   }
 }
 
+async function fetchApiKeyStatus() {
+  const el = $("apiKeyStatus");
+  const errEl = $("apiKeyError");
+  if (!el) return;
+
+  errEl && (errEl.textContent = "");
+
+  return withAuthToken(async ({ token }) => {
+    if (!token) {
+      el.textContent = "Not Connected";
+      return;
+    }
+
+    const resp = await fetch(`${BACKEND_URL}/account/api-key/status`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (resp.status === 401) {
+      await handleApi401AndRecover();
+      el.textContent = "Not Connected";
+      return;
+    }
+
+    if (!resp.ok) {
+      el.textContent = "Not Connected";
+      return;
+    }
+
+    const data = await resp.json().catch(() => null);
+    el.textContent = data?.hasKey ? "Connected" : "Not Connected";
+  });
+}
+
+async function saveApiKeyFromInput() {
+  const input = $("apiKeyInput");
+  const errEl = $("apiKeyError");
+  if (!input) return;
+
+  const apiKey = input.value;
+  const s = String(apiKey || "").trim();
+
+  if (!s) {
+    errEl && (errEl.textContent = "API key is required");
+    return;
+  }
+
+  errEl && (errEl.textContent = "");
+
+  return withAuthToken(async ({ token }) => {
+    if (!token) return;
+
+    const resp = await fetch(`${BACKEND_URL}/account/api-key`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ apiKey: s })
+    });
+
+    if (resp.status === 401) {
+      await handleApi401AndRecover();
+      return;
+    }
+
+    const data = await resp.json().catch(() => null);
+    if (!resp.ok) {
+      errEl && (errEl.textContent = data?.error || "Failed to save API key");
+      return;
+    }
+
+    input.value = "";
+    await fetchApiKeyStatus();
+    errEl && (errEl.textContent = "");
+  });
+}
+
+async function removeApiKey() {
+  const errEl = $("apiKeyError");
+  errEl && (errEl.textContent = "");
+
+  return withAuthToken(async ({ token }) => {
+    if (!token) return;
+
+    const resp = await fetch(`${BACKEND_URL}/account/api-key`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (resp.status === 401) {
+      await handleApi401AndRecover();
+      return;
+    }
+
+    const data = await resp.json().catch(() => null);
+    if (!resp.ok) {
+      errEl && (errEl.textContent = data?.error || "Failed to remove API key");
+      return;
+    }
+
+    await fetchApiKeyStatus();
+    errEl && (errEl.textContent = "");
+  });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
-  loadProfilesFromStorage((siteSettings) => {
-    refreshProfileUI();
-    initSiteToggle(siteSettings);
+  // Auth buttons
 
-    $("profileSelect").addEventListener("change", onProfileSelectChange);
-    $("newProfileBtn").addEventListener("click", onNewProfile);
-    $("saveProfileBtn").addEventListener("click", onSaveProfile);
-    $("fillNowBtn").addEventListener("click", onFillNow);
-    $("generateCoverBtn").addEventListener("click", onGenerateCoverLetter);
+  const loginBtn = $("authLoginBtn");
+  const signupBtn = $("authSignupBtn");
 
-    $("parseResumeBtn").addEventListener("click", onParseResumeClick);
+  if (loginBtn) loginBtn.addEventListener("click", () => authenticate("login"));
+  if (signupBtn) signupBtn.addEventListener("click", () => authenticate("signup"));
 
-    $("markAppliedBtn").addEventListener("click", onMarkApplied);
+  const logoutBtn = $("logoutBtn");
+  if (logoutBtn)
+    logoutBtn.addEventListener("click", async () => {
+      await clearAuth();
+      setAuthError("");
+      showAuthView();
+    });
 
-    $("tabApplyBtn").addEventListener("click", onShowApplyTab);
-    $("tabHistoryBtn").addEventListener("click", onShowHistoryTab);
+  // Auth gate for main UI
+  tryEnsureAuthOrShowLogin().then((ok) => {
+    if (!ok) return;
+    loadProfilesFromStorage((siteSettings) => {
+      refreshProfileUI();
+      initSiteToggle(siteSettings);
 
-    onShowApplyTab();
+      // Prefill returning users' stored profile from backend
+      fetchProfileFromBackend()
+        .then((profile) => {
+          // Only overwrite if backend has something meaningful
+          if (profile && (profile.firstName || profile.lastName || profile.email || profile.phone)) {
+            prefillFormFromServerProfile(profile);
+          }
+        })
+        .catch(() => {});
+
+      $("profileSelect").addEventListener("change", onProfileSelectChange);
+
+      // Account settings: API key connect status
+      $("saveApiKeyBtn")?.addEventListener("click", () => saveApiKeyFromInput());
+      $("removeApiKeyBtn")?.addEventListener("click", () => removeApiKey());
+      fetchApiKeyStatus();
+
+      $("newProfileBtn").addEventListener("click", onNewProfile);
+
+      $("saveProfileBtn").addEventListener("click", onSaveProfile);
+      $("fillNowBtn").addEventListener("click", onFillNow);
+      $("generateCoverBtn").addEventListener("click", onGenerateCoverLetter);
+
+      $("parseResumeBtn").addEventListener("click", onParseResumeClick);
+      $("markAppliedBtn").addEventListener("click", onMarkApplied);
+
+      $("tabApplyBtn").addEventListener("click", onShowApplyTab);
+      $("tabHistoryBtn").addEventListener("click", onShowHistoryTab);
+
+      onShowApplyTab();
+    });
   });
 });
+
 
 
 

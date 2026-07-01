@@ -1,7 +1,5 @@
-// job-autofill-extension/background.js
-
 chrome.runtime.onInstalled.addListener(() => {
-  console.log("[Job Autofill+] Extension installed");
+  console.log("[otoppy Extension installed");
 
   // Optional: initialize defaults once.
   chrome.storage.sync.get(["jobProfiles", "activeProfileId", "siteSettings"], (data) => {

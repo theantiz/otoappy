@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Job Autofill+</title>
+    <title>otoappy</title>
     <style>
       :root {
         --bg: #ffffff;
@@ -207,18 +207,46 @@
     <div class="wrap">
       <div class="top">
         <div class="brand">
-          <div class="brandTitle">Job Autofill+</div>
+          <div class="brandTitle">otoappy</div>
           <div id="currentDomain"></div>
         </div>
 
-        <div id="siteToggle">
-          <input type="checkbox" id="enableSite" />
-          <label for="enableSite" style="font-weight:500;margin:0;">Enabled</label>
-        </div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <div id="siteToggle" style="flex:1;">
+              <input type="checkbox" id="enableSite" />
+              <label for="enableSite" style="font-weight:500;margin:0;">Enabled</label>
+            </div>
+            <button id="logoutBtn" class="btnSecondary" style="width:auto; margin-top:0;">Log Out</button>
+          </div>
       </div>
 
+
       <div class="panel">
-        <div style="display:flex; gap:10px; align-items:center; justify-content:space-between;">
+        <div id="authView">
+
+          <h3 style="margin-top:0;">Sign in</h3>
+
+          <div class="row">
+            <label for="authEmail">Email</label>
+            <input id="authEmail" type="email" autocomplete="email" />
+          </div>
+
+          <div class="row">
+            <label for="authPassword">Password</label>
+            <input id="authPassword" type="password" autocomplete="current-password" />
+          </div>
+
+          <div id="authButtons" class="row" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+            <button id="authLoginBtn" class="btnPrimary" style="margin-top:0;">Log In</button>
+            <button id="authSignupBtn" class="btnSecondary" style="margin-top:0;">Sign Up</button>
+          </div>
+
+          <div id="authError" style="color: var(--danger); font-size: 11.5px; margin-top: 6px; min-height: 16px;"></div>
+        </div>
+
+        <div id="mainView">
+          <div style="display:flex; gap:10px; align-items:center; justify-content:space-between;">
+
           <div class="profileHeader" style="margin:0; flex:1;">
             <select id="profileSelect"></select>
             <button id="newProfileBtn" class="btnSecondary" style="margin-top:0;width:auto;">New profile</button>
@@ -232,12 +260,35 @@
 
         <hr />
 
+        <div id="accountSettings">
+          <h3>Account Settings</h3>
+
+          <div class="row">
+            <label for="apiKeyInput">OpenAI API key</label>
+            <input id="apiKeyInput" type="password" placeholder="Paste your API key" autocomplete="off" />
+          </div>
+
+          <div style="display:flex; gap:8px; align-items:center;">
+            <div id="apiKeyStatus" class="pill" style="margin-top:2px;">Not Connected</div>
+          </div>
+
+          <div id="apiKeyButtons" class="row" style="display:flex; gap:10px; margin-top:10px;">
+            <button id="saveApiKeyBtn" class="btnPrimary" style="width:auto; margin-top:0;">Save Key</button>
+            <button id="removeApiKeyBtn" class="btnSecondary" style="width:auto; margin-top:0;">Remove Key</button>
+          </div>
+
+          <div id="apiKeyError" style="color: var(--danger); font-size: 11.5px; margin-top:6px; min-height:16px;"></div>
+
+          <hr />
+        </div>
+
         <div id="applyTab">
+
           <h3>Profile details</h3>
 
           <div class="row" style="margin-top:8px;">
             <label for="resumeUpload">Upload Resume</label>
-            <input id="resumeUpload" type="file" accept=".pdf,.docx" />
+            <input id="resumeUpload" type="file" accept=".pdf,.docx,.tex" />
           </div>
 
           <div class="row" style="margin-top:8px;">
