@@ -235,10 +235,20 @@
         <div id="applyTab">
           <h3>Profile details</h3>
 
+          <div class="row" style="margin-top:8px;">
+            <label for="resumeUpload">Upload Resume</label>
+            <input id="resumeUpload" type="file" accept=".pdf,.docx" />
+          </div>
 
+          <div class="row" style="margin-top:8px;">
+            <button id="parseResumeBtn" class="btnGhost" style="margin-top:0;">
+              Parse &amp; Fill Profile
+            </button>
+          </div>
 
+          <div id="resumeParseError" style="color: var(--danger); font-size: 11.5px; margin-top: 4px; min-height: 16px;"></div>
 
-          <label for="profileName">Profile name</label>
+          <label for="profileName" style="margin-top:10px;">Profile name</label>
           <input id="profileName" type="text" />
         </div>
 

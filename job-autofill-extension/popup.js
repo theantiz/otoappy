@@ -288,7 +288,7 @@ function escapeHtml(s) {
     .replace(/&/g, "&amp;")
     .replace(/</g, "<")
     .replace(/>/g, ">")
-    .replace(/\"/g, """)
+    .replace(/\"/g, "")
     .replace(/'/g, "&#039;");
 }
 
@@ -393,6 +393,97 @@ function onMarkApplied() {
   });
 }
 
+async function parseResumeViaBackend(file) {
+  const formData = new FormData();
+  formData.append("resume", file);
+
+  const resp = await fetch(`${BACKEND_URL}/parse-resume`, {
+    method: "POST",
+    body: formData
+  });
+
+  if (!resp.ok) {
+    const text = await resp.text().catch(() => "");
+    throw new Error(`Backend error: ${resp.status} ${text}`);
+  }
+
+  return await resp.json();
+}
+
+function setResumeParseError(msg) {
+  const el = $("resumeParseError");
+  if (!el) return;
+  el.textContent = msg || "";
+}
+
+function setParseResumeButtonLoading(loading) {
+  const btn = $("parseResumeBtn");
+  if (!btn) return;
+  btn.disabled = !!loading;
+  btn.textContent = loading ? "Parsing…" : "Parse & Fill Profile";
+}
+
+function setProfileFormFromParsedData(parsed) {
+  const firstName = parsed?.firstName ? String(parsed.firstName) : "";
+  const lastName = parsed?.lastName ? String(parsed.lastName) : "";
+  const fullName = [firstName, lastName].filter(Boolean).join(" ").trim();
+
+  $("fullName").value = fullName;
+  $("email").value = parsed?.email ? String(parsed.email) : "";
+  $("phone").value = parsed?.phone ? String(parsed.phone) : "";
+
+  const addr = parsed?.address || {};
+  const street = addr?.street ? String(addr.street) : "";
+  const city = addr?.city ? String(addr.city) : "";
+  const state = addr?.state ? String(addr.state) : "";
+  const zip = addr?.zip ? String(addr.zip) : "";
+  const country = addr?.country ? String(addr.country) : "";
+
+  const addressLine = [street, city, state, zip, country].filter(Boolean).join(", ");
+  $("address").value = addressLine;
+  $("location").value = [city, state].filter(Boolean).join(", ");
+}
+
+async function onParseResumeClick() {
+  setResumeParseError("");
+
+  const input = $("resumeUpload");
+  const file = input?.files && input.files[0];
+  if (!file) {
+    setResumeParseError("Select a PDF or .docx resume first.");
+    return;
+  }
+
+  const isAllowedType =
+    file.type === "application/pdf" ||
+    file.name.toLowerCase().endsWith(".pdf") ||
+    file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+    file.name.toLowerCase().endsWith(".docx");
+
+  if (!isAllowedType) {
+    setResumeParseError("Invalid file type. Upload a .pdf or .docx.");
+    return;
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    setResumeParseError("File too large. Max size is 5MB.");
+    return;
+  }
+
+  setParseResumeButtonLoading(true);
+
+  try {
+    const parsed = await parseResumeViaBackend(file);
+    setProfileFormFromParsedData(parsed);
+    setStatus("Profile fields parsed. Review before saving.");
+  } catch (err) {
+    console.error(err);
+    setResumeParseError(err && err.message ? err.message : "Failed to parse resume.");
+  } finally {
+    setParseResumeButtonLoading(false);
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   loadProfilesFromStorage((siteSettings) => {
     refreshProfileUI();
@@ -404,6 +495,8 @@ document.addEventListener("DOMContentLoaded", () => {
     $("fillNowBtn").addEventListener("click", onFillNow);
     $("generateCoverBtn").addEventListener("click", onGenerateCoverLetter);
 
+    $("parseResumeBtn").addEventListener("click", onParseResumeClick);
+
     $("markAppliedBtn").addEventListener("click", onMarkApplied);
 
     $("tabApplyBtn").addEventListener("click", onShowApplyTab);
@@ -412,4 +505,6 @@ document.addEventListener("DOMContentLoaded", () => {
     onShowApplyTab();
   });
 });
+
+
 
