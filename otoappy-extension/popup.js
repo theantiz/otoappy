@@ -2,14 +2,22 @@
 
 const PROFILE_FIELDS = [
   "profileName",
+  "firstName",
+  "lastName",
   "fullName",
   "email",
   "phone",
   "address",
   "location",
-  "portfolio",
+  "headline",
+  "currentCompany",
+  "website",
   "github",
   "linkedin",
+  "twitter",
+  "pronouns",
+  "workAuthorization",
+  "sponsorship",
   "whyRole",
   "aboutMe",
   "coverLetter"
@@ -331,14 +339,22 @@ function onNewProfile() {
     id: generateId(),
     data: {
       profileName: "New profile",
+      firstName: "",
+      lastName: "",
       fullName: "",
       email: "",
       phone: "",
       address: "",
       location: "",
-      portfolio: "",
+      headline: "",
+      currentCompany: "",
+      website: "",
       github: "",
       linkedin: "",
+      twitter: "",
+      pronouns: "",
+      workAuthorization: "",
+      sponsorship: "",
       whyRole: "",
       aboutMe: "",
       coverLetter: ""
@@ -624,7 +640,9 @@ function setProfileFormFromParsedData(parsed) {
   const lastName = parsed?.lastName ? String(parsed.lastName) : "";
   const fullName = [firstName, lastName].filter(Boolean).join(" ").trim();
 
-  $("fullName").value = fullName;
+  if ($("firstName")) $("firstName").value = firstName;
+  if ($("lastName")) $("lastName").value = lastName;
+  if ($("fullName")) $("fullName").value = fullName;
   $("email").value = parsed?.email ? String(parsed.email) : "";
   $("phone").value = parsed?.phone ? String(parsed.phone) : "";
 
@@ -648,7 +666,9 @@ async function prefillFormFromServerProfile(profile) {
   const fullName = [firstName, lastName].filter(Boolean).join(" ").trim();
 
   // Overwrite existing inputs (returning user behavior)
-  $("fullName").value = fullName;
+  if ($("firstName")) $("firstName").value = firstName;
+  if ($("lastName")) $("lastName").value = lastName;
+  if ($("fullName")) $("fullName").value = fullName;
   $("email").value = profile?.email ? String(profile.email) : "";
   $("phone").value = profile?.phone ? String(profile.phone) : "";
 

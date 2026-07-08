@@ -4,30 +4,36 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>otoappy</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
       :root {
-        --bg: #ffffff;
-        --panel: #f6f7fb;
-        --text: #111827;
-        --muted: #6b7280;
-        --border: #e5e7eb;
-        --shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
-        --primary: #2563eb;
-        --primaryHover: #1d4ed8;
+        --bg: #f8fafc;
+        --panel: rgba(255, 255, 255, 0.7);
+        --text: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+        --shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1);
+        --primary: #4f46e5;
+        --primaryHover: #4338ca;
         --danger: #ef4444;
+        --accent: #0ea5e9;
+        --focus-ring: rgba(79, 70, 229, 0.3);
       }
 
       body {
-        font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+        font-family: 'Inter', sans-serif;
         font-size: 13px;
         margin: 0;
         width: 380px;
         color: var(--text);
-        background: var(--bg);
+        background: linear-gradient(135deg, #e0e7ff 0%, #f0fdfa 100%);
+        min-height: 500px;
       }
 
       .wrap {
-        padding: 14px;
+        padding: 16px;
       }
 
       .top {
@@ -35,7 +41,7 @@
         align-items: flex-start;
         justify-content: space-between;
         gap: 10px;
-        margin-bottom: 10px;
+        margin-bottom: 16px;
       }
 
       .brand {
@@ -45,26 +51,39 @@
       }
 
       .brandTitle {
-        font-size: 14px;
+        font-size: 16px;
         font-weight: 800;
+        background: linear-gradient(90deg, #4f46e5, #0ea5e9);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
       }
 
       #currentDomain {
         font-size: 11px;
         color: var(--muted);
         line-height: 1.2;
+        font-weight: 500;
       }
 
       #siteToggle {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
         padding-top: 2px;
       }
 
       #siteToggle input {
-        width: 16px;
-        height: 16px;
+        width: 14px;
+        height: 14px;
+        cursor: pointer;
+      }
+      
+      #siteToggle label {
+        font-size: 12px;
+        font-weight: 500;
+        margin: 0;
+        color: var(--text);
+        cursor: pointer;
       }
 
       .pill {
@@ -72,39 +91,65 @@
         color: var(--muted);
         border: 1px solid var(--border);
         background: #fff;
-        padding: 2px 8px;
+        padding: 3px 10px;
         border-radius: 999px;
+        font-weight: 500;
       }
 
       .panel {
         background: var(--panel);
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        padding: 12px;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        border-radius: 16px;
+        padding: 16px;
         box-shadow: var(--shadow);
       }
 
       hr {
         border: 0;
-        border-top: 1px solid var(--border);
-        margin: 12px 0;
+        border-top: 1px solid rgba(0,0,0,0.06);
+        margin: 16px 0;
       }
 
       h3 {
-        margin: 0 0 10px 0;
-        font-size: 13px;
-        color: #111827;
+        margin: 0 0 12px 0;
+        font-size: 14px;
+        color: var(--text);
+        font-weight: 700;
+      }
+      
+      .section-title {
+        font-size: 11px;
+        text-transform: uppercase;
+        font-weight: 700;
+        color: var(--muted);
+        margin: 20px 0 12px 0;
+        letter-spacing: 0.05em;
+        border-bottom: 1px solid rgba(0,0,0,0.06);
+        padding-bottom: 6px;
       }
 
       .row {
-        margin-bottom: 10px;
+        margin-bottom: 12px;
+      }
+      
+      .row-flex {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+
+      .row-flex > div {
+        flex: 1;
       }
 
       label {
         display: block;
-        font-weight: 650;
-        margin-bottom: 4px;
-        color: #111827;
+        font-weight: 600;
+        margin-bottom: 6px;
+        color: var(--text);
+        font-size: 12px;
       }
 
       input,
@@ -112,24 +157,27 @@
       select {
         width: 100%;
         box-sizing: border-box;
-        padding: 8px 10px;
-        font-size: 12.5px;
-        border: 1px solid #d1d5db;
+        padding: 8px 12px;
+        font-size: 13px;
+        border: 1px solid var(--border);
         border-radius: 10px;
         outline: none;
-        background: #fff;
+        background: rgba(255, 255, 255, 0.9);
+        font-family: inherit;
+        transition: all 0.2s ease;
       }
 
       input:focus,
       textarea:focus,
       select:focus {
-        border-color: rgba(37, 99, 235, 0.6);
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px var(--focus-ring);
+        background: #ffffff;
       }
 
       textarea {
         resize: vertical;
-        min-height: 44px;
+        min-height: 56px;
       }
 
       .profileHeader {
@@ -143,47 +191,62 @@
       button {
         width: 100%;
         margin-top: 8px;
-        padding: 10px 12px;
-        font-weight: 800;
+        padding: 10px 14px;
+        font-weight: 600;
+        font-size: 13px;
         cursor: pointer;
-        border: 1px solid #d1d5db;
-        border-radius: 12px;
-        background: #f9fafb;
-        color: #111827;
+        border: 1px solid transparent;
+        border-radius: 10px;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        font-family: inherit;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
       }
 
-      button:hover {
-        background: #f3f4f6;
+      button:active {
+        transform: scale(0.98);
       }
 
       .btnSecondary {
-        background: #fff;
+        background: #ffffff;
+        border-color: var(--border);
+        color: var(--text);
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      }
+
+      .btnSecondary:hover {
+        background: #f8fafc;
+        border-color: #cbd5e1;
       }
 
       .btnPrimary {
-        border-color: rgba(37, 99, 235, 0.5);
         background: var(--primary);
-        color: #fff;
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
       }
 
       .btnPrimary:hover {
         background: var(--primaryHover);
+        box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4);
       }
 
       .btnGhost {
-        background: #eef2ff;
-        border-color: rgba(99, 102, 241, 0.25);
-        color: #3730a3;
+        background: rgba(79, 70, 229, 0.08);
+        border-color: transparent;
+        color: var(--primary);
       }
 
       .btnGhost:hover {
-        background: #e0e7ff;
+        background: rgba(79, 70, 229, 0.15);
       }
 
       #controls {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 10px;
+        margin-top: 20px;
       }
 
       #controls button {
@@ -195,10 +258,23 @@
       }
 
       #status {
-        margin-top: 10px;
-        font-size: 11px;
-        color: #374151;
-        min-height: 14px;
+        margin-top: 12px;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--primary);
+        text-align: center;
+        min-height: 16px;
+      }
+      
+      .tab-buttons {
+        display: flex;
+        gap: 8px;
+        margin-left: 8px;
+      }
+      
+      .tab-buttons button {
+        margin: 0;
+        padding: 6px 12px;
       }
     </style>
   </head>
@@ -211,19 +287,17 @@
           <div id="currentDomain"></div>
         </div>
 
-          <div style="display:flex; gap:10px; align-items:center;">
-            <div id="siteToggle" style="flex:1;">
-              <input type="checkbox" id="enableSite" />
-              <label for="enableSite" style="font-weight:500;margin:0;">Enabled</label>
-            </div>
-            <button id="logoutBtn" class="btnSecondary" style="width:auto; margin-top:0;">Log Out</button>
+        <div style="display:flex; gap:12px; align-items:center;">
+          <div id="siteToggle">
+            <input type="checkbox" id="enableSite" />
+            <label for="enableSite">Enabled</label>
           </div>
+          <button id="logoutBtn" class="btnSecondary" style="width:auto; margin-top:0; padding:6px 12px; font-size:12px;">Log Out</button>
+        </div>
       </div>
-
 
       <div class="panel">
         <div id="authView">
-
           <h3 style="margin-top:0;">Sign in</h3>
 
           <div class="row">
@@ -241,157 +315,204 @@
             <button id="authSignupBtn" class="btnSecondary" style="margin-top:0;">Sign Up</button>
           </div>
 
-          <div id="authError" style="color: var(--danger); font-size: 11.5px; margin-top: 6px; min-height: 16px;"></div>
+          <div id="authError" style="color: var(--danger); font-size: 12px; margin-top: 8px; min-height: 16px; text-align:center;"></div>
         </div>
 
         <div id="mainView">
           <div style="display:flex; gap:10px; align-items:center; justify-content:space-between;">
+            <div class="profileHeader" style="margin:0; flex:1;">
+              <select id="profileSelect"></select>
+              <button id="newProfileBtn" class="btnSecondary" style="margin-top:0;width:auto;padding:8px 12px;">New profile</button>
+            </div>
 
-          <div class="profileHeader" style="margin:0; flex:1;">
-            <select id="profileSelect"></select>
-            <button id="newProfileBtn" class="btnSecondary" style="margin-top:0;width:auto;">New profile</button>
+            <div class="tab-buttons">
+              <button id="tabApplyBtn" class="btnGhost" style="width:auto;">Apply</button>
+              <button id="tabHistoryBtn" class="btnGhost" style="width:auto;">History</button>
+            </div>
           </div>
-
-          <div style="display:flex; gap:8px;">
-            <button id="tabApplyBtn" class="btnGhost" style="width:auto; margin-top:0;">Apply</button>
-            <button id="tabHistoryBtn" class="btnGhost" style="width:auto; margin-top:0;">History</button>
-          </div>
-        </div>
-
-        <hr />
-
-        <div id="accountSettings">
-          <h3>Account Settings</h3>
-
-          <div class="row">
-            <label for="apiKeyInput">OpenAI API key</label>
-            <input id="apiKeyInput" type="password" placeholder="Paste your API key" autocomplete="off" />
-          </div>
-
-          <div style="display:flex; gap:8px; align-items:center;">
-            <div id="apiKeyStatus" class="pill" style="margin-top:2px;">Not Connected</div>
-          </div>
-
-          <div id="apiKeyButtons" class="row" style="display:flex; gap:10px; margin-top:10px;">
-            <button id="saveApiKeyBtn" class="btnPrimary" style="width:auto; margin-top:0;">Save Key</button>
-            <button id="removeApiKeyBtn" class="btnSecondary" style="width:auto; margin-top:0;">Remove Key</button>
-          </div>
-
-          <div id="apiKeyError" style="color: var(--danger); font-size: 11.5px; margin-top:6px; min-height:16px;"></div>
 
           <hr />
-        </div>
 
-        <div id="applyTab">
+          <div id="accountSettings">
+            <h3>Account Settings</h3>
 
-          <h3>Profile details</h3>
+            <div class="row">
+              <label for="apiKeyInput">OpenAI API key</label>
+              <input id="apiKeyInput" type="password" placeholder="Paste your API key" autocomplete="off" />
+            </div>
 
-          <div class="row" style="margin-top:8px;">
-            <label for="resumeUpload">Upload Resume</label>
-            <input id="resumeUpload" type="file" accept=".pdf,.docx,.tex" />
+            <div style="display:flex; gap:8px; align-items:center;">
+              <div id="apiKeyStatus" class="pill" style="margin-top:2px;">Not Connected</div>
+            </div>
+
+            <div id="apiKeyButtons" class="row" style="display:flex; gap:10px; margin-top:12px;">
+              <button id="saveApiKeyBtn" class="btnPrimary" style="width:auto; margin-top:0;">Save Key</button>
+              <button id="removeApiKeyBtn" class="btnSecondary" style="width:auto; margin-top:0;">Remove Key</button>
+            </div>
+
+            <div id="apiKeyError" style="color: var(--danger); font-size: 12px; margin-top:8px; min-height:16px;"></div>
+
+            <hr />
           </div>
 
-          <div class="row" style="margin-top:8px;">
-            <button id="parseResumeBtn" class="btnGhost" style="margin-top:0;">
-              Parse &amp; Fill Profile
-            </button>
+          <div id="applyTab">
+            <h3>Profile details</h3>
+
+            <div class="row" style="margin-top:8px; background: rgba(255,255,255,0.5); padding: 12px; border-radius: 12px; border: 1px dashed var(--border);">
+              <label for="resumeUpload">Upload Resume</label>
+              <input id="resumeUpload" type="file" accept=".pdf,.docx,.tex" style="margin-bottom:8px;" />
+              <button id="parseResumeBtn" class="btnGhost" style="margin-top:0;">
+                Parse &amp; Fill Profile
+              </button>
+              <div id="resumeParseError" style="color: var(--danger); font-size: 12px; margin-top: 8px; min-height: 16px; text-align:center;"></div>
+            </div>
+
+            <div class="section-title">Identity</div>
+            
+            <div class="row">
+              <label for="profileName">Profile name</label>
+              <input id="profileName" type="text" />
+            </div>
+
+            <div class="row-flex">
+              <div>
+                <label for="firstName">First Name</label>
+                <input id="firstName" type="text" />
+              </div>
+              <div>
+                <label for="lastName">Last Name</label>
+                <input id="lastName" type="text" />
+              </div>
+            </div>
+
+            <div class="row">
+              <label for="fullName">Full Name</label>
+              <input id="fullName" type="text" />
+            </div>
+
+            <div class="row-flex">
+              <div>
+                <label for="email">Email</label>
+                <input id="email" type="email" />
+              </div>
+              <div>
+                <label for="phone">Phone</label>
+                <input id="phone" type="text" />
+              </div>
+            </div>
+
+            <div class="row">
+              <label for="address">Address</label>
+              <input id="address" type="text" />
+            </div>
+
+            <div class="row">
+              <label for="location">Location (City, State)</label>
+              <input id="location" type="text" />
+            </div>
+
+            <div class="section-title">Professional</div>
+
+            <div class="row">
+              <label for="headline">Headline / Title</label>
+              <input id="headline" type="text" placeholder="e.g. Software Engineer" />
+            </div>
+
+            <div class="row">
+              <label for="currentCompany">Current Company</label>
+              <input id="currentCompany" type="text" />
+            </div>
+
+            <div class="row-flex">
+              <div>
+                <label for="website">Website</label>
+                <input id="website" type="url" />
+              </div>
+              <div>
+                <label for="github">GitHub</label>
+                <input id="github" type="url" />
+              </div>
+            </div>
+
+            <div class="row-flex">
+              <div>
+                <label for="linkedin">LinkedIn</label>
+                <input id="linkedin" type="url" />
+              </div>
+              <div>
+                <label for="twitter">Twitter</label>
+                <input id="twitter" type="url" />
+              </div>
+            </div>
+
+            <div class="section-title">Additional Info</div>
+
+            <div class="row-flex">
+              <div>
+                <label for="pronouns">Pronouns</label>
+                <input id="pronouns" type="text" placeholder="e.g. they/them" />
+              </div>
+              <div>
+                <label for="workAuthorization">Authorized to work?</label>
+                <input id="workAuthorization" type="text" placeholder="e.g. Yes" />
+              </div>
+            </div>
+
+            <div class="row">
+              <label for="sponsorship">Require Sponsorship?</label>
+              <input id="sponsorship" type="text" placeholder="e.g. No" />
+            </div>
+
+            <div class="section-title">Text Responses</div>
+
+            <div class="row">
+              <label for="whyRole">Why this role?</label>
+              <textarea id="whyRole"></textarea>
+            </div>
+
+            <div class="row">
+              <label for="aboutMe">About me</label>
+              <textarea id="aboutMe"></textarea>
+            </div>
+
+            <div class="row">
+              <label for="coverLetter">Cover letter</label>
+              <textarea id="coverLetter"></textarea>
+            </div>
+
+            <div id="aiActions" class="row">
+              <button
+                id="generateCoverBtn"
+                class="btnGhost"
+                title="Uses the backend server to generate an AI cover letter"
+              >
+                ✨ Generate cover letter (AI)
+              </button>
+            </div>
+
+            <div id="controls" class="row">
+              <button id="saveProfileBtn" class="btnSecondary">Save profile</button>
+              <button id="fillNowBtn" class="btnPrimary">Fill now</button>
+            </div>
+
+            <hr />
+            
+            <div class="row">
+              <button id="markAppliedBtn" class="btnPrimary" style="margin-top:0;">Mark as Applied</button>
+            </div>
+
+            <div id="status"></div>
           </div>
 
-          <div id="resumeParseError" style="color: var(--danger); font-size: 11.5px; margin-top: 4px; min-height: 16px;"></div>
+          <div id="historyTab" style="display:none;">
+            <h3 style="margin-bottom:12px;">Application History</h3>
+            <div id="historyList"></div>
+            <div id="historyEmpty" style="color: var(--muted); font-size: 13px; text-align:center; padding: 20px 0;">No applications recorded yet.</div>
+          </div>
 
-          <label for="profileName" style="margin-top:10px;">Profile name</label>
-          <input id="profileName" type="text" />
+          <script src="popup.js"></script>
         </div>
-
-        <div class="row">
-          <label for="fullName">Full Name</label>
-          <input id="fullName" type="text" />
-        </div>
-
-        <div class="row">
-          <label for="email">Email</label>
-          <input id="email" type="email" />
-        </div>
-
-        <div class="row">
-          <label for="phone">Phone</label>
-          <input id="phone" type="text" />
-        </div>
-
-        <div class="row">
-          <label for="address">Address</label>
-          <input id="address" type="text" />
-        </div>
-
-        <div class="row">
-          <label for="location">Location</label>
-          <input id="location" type="text" />
-        </div>
-
-        <div class="row">
-          <label for="portfolio">Portfolio</label>
-          <input id="portfolio" type="url" />
-        </div>
-
-        <div class="row">
-          <label for="github">GitHub</label>
-          <input id="github" type="url" />
-        </div>
-
-        <div class="row">
-          <label for="linkedin">LinkedIn</label>
-          <input id="linkedin" type="url" />
-        </div>
-
-        <div class="row">
-          <label for="whyRole">Why this role?</label>
-          <textarea id="whyRole"></textarea>
-        </div>
-
-        <div class="row">
-          <label for="aboutMe">About me</label>
-          <textarea id="aboutMe"></textarea>
-        </div>
-
-        <div class="row">
-          <label for="coverLetter">Cover letter</label>
-          <textarea id="coverLetter"></textarea>
-        </div>
-
-        <div id="controls" class="row">
-          <button id="saveProfileBtn" class="btnSecondary">Save profile</button>
-          <button id="fillNowBtn" class="btnPrimary">Fill now</button>
-        </div>
-
-        <div id="aiActions" class="row">
-          <button
-            id="generateCoverBtn"
-            class="btnGhost"
-            title="Uses the backend server to generate an AI cover letter"
-          >
-            Generate cover letter (AI)
-          </button>
-        </div>
-
-        <div class="row">
-          <button id="markAppliedBtn" class="btnPrimary" style="margin-top:0;">Mark as Applied</button>
-        </div>
-
-        <div id="status"></div>
       </div>
-
-      <div id="historyTab" style="display:none;">
-
-        <h3 style="margin-bottom:10px;">Application History</h3>
-        <div id="historyList"></div>
-        <div id="historyEmpty" style="color: var(--muted); font-size: 12px;">No applications recorded yet.</div>
-      </div>
-
-
-      <script src="popup.js"></script>
     </div>
   </body>
 </html>
-
-
-
