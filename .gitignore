@@ -8,6 +8,7 @@ job-autofill-backend/package-lock.json
 # Local environment / secrets
 .env
 .env.*
+!.env.example
 
 # ---- Browser extension / common build outputs ----
 node_modules/

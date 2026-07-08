@@ -15,7 +15,7 @@ function createRequireAuth({ JWT_SECRET }) {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    const match = String(authHeader).match(/^Bearer\\s+(.+)$/i);
+    const match = String(authHeader).match(/^Bearer\s+(.+)$/i);
     if (!match) {
       return res.status(401).json({ error: "Unauthorized" });
     }
